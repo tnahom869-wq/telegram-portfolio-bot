@@ -171,8 +171,7 @@ async def button_handler(
         "Telegram: @nahomon\n"
         "Phone: 0900023230"
     )
-            
-)
+
 
     elif query.data == "main_menu":
 
