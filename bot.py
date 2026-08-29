@@ -61,8 +61,11 @@ def main_menu():
     return InlineKeyboardMarkup(keyboard)
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# =========================
+# START COMMAND
+# =========================
 
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "👋 Welcome to Nahom's Digital Portfolio!\n\n"
         "Choose an option below:",
@@ -82,6 +85,7 @@ async def button_handler(
     query = update.callback_query
     await query.answer()
 
+    # PORTFOLIO MENU
     if query.data == "portfolio":
 
         keyboard = [
@@ -122,6 +126,7 @@ async def button_handler(
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
+    # VIDEO EDITING
     elif query.data == "video_editing":
 
         await query.edit_message_text(
@@ -130,6 +135,7 @@ async def button_handler(
             "Video files will be added soon!"
         )
 
+    # GRAPHIC DESIGN
     elif query.data == "graphic_design":
 
         await query.edit_message_text(
@@ -137,6 +143,7 @@ async def button_handler(
             "🖼️ My graphic design projects will appear here."
         )
 
+    # WEBSITE DEVELOPMENT
     elif query.data == "website_development":
 
         await query.edit_message_text(
@@ -144,6 +151,7 @@ async def button_handler(
             "🌐 My website projects will appear here."
         )
 
+    # PROMPT ENGINEERING
     elif query.data == "prompt_engineering":
 
         await query.edit_message_text(
@@ -151,6 +159,7 @@ async def button_handler(
             "My AI and Prompt Engineering projects will appear here."
         )
 
+    # ABOUT ME
     elif query.data == "about":
 
         await query.edit_message_text(
@@ -163,16 +172,17 @@ async def button_handler(
             "Welcome to my professional digital portfolio!"
         )
 
+    # CONTACT ME
     elif query.data == "contact":
 
-    await query.edit_message_text(
-        "📞 Contact Me\n\n"
-        "Name: Nahom\n"
-        "Telegram: @nahomon\n"
-        "Phone: 0900023230"
-    )
+        await query.edit_message_text(
+            "📞 Contact Me\n\n"
+            "Name: Nahom\n"
+            "Telegram: @nahomon\n"
+            "Phone: 0900023230"
+        )
 
-
+    # BACK TO MAIN MENU
     elif query.data == "main_menu":
 
         await query.edit_message_text(
@@ -192,6 +202,7 @@ if not TOKEN:
     raise ValueError("BOT_TOKEN environment variable is not set!")
 
 
+# Start Render health check server
 web_thread = threading.Thread(
     target=run_web_server,
     daemon=True
@@ -200,6 +211,7 @@ web_thread = threading.Thread(
 web_thread.start()
 
 
+# Start Telegram bot
 app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
