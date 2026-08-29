@@ -1,4 +1,6 @@
 import os
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -10,11 +12,31 @@ from telegram.ext import (
 
 
 # =========================
+# SIMPLE RENDER WEB SERVER
+# =========================
+
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"Telegram Portfolio Bot is running!")
+
+    def log_message(self, format, *args):
+        return
+
+
+def run_web_server():
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), HealthHandler)
+    server.serve_forever()
+
+
+# =========================
 # MAIN MENU
 # =========================
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
+def main_menu():
     keyboard = [
         [
             InlineKeyboardButton(
@@ -36,12 +58,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ],
     ]
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    return InlineKeyboardMarkup(keyboard)
+
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         "👋 Welcome to Nahom's Digital Portfolio!\n\n"
         "Choose an option below:",
-        reply_markup=reply_markup
+        reply_markup=main_menu()
     )
 
 
@@ -57,7 +82,6 @@ async def button_handler(
     query = update.callback_query
     await query.answer()
 
-    # PORTFOLIO MENU
     if query.data == "portfolio":
 
         keyboard = [
@@ -94,49 +118,32 @@ async def button_handler(
         ]
 
         await query.edit_message_text(
-            "🎨 My Portfolio\n\n"
-            "Select a category:",
+            "🎨 My Portfolio\n\nSelect a category:",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
-
-    # VIDEO EDITING
     elif query.data == "video_editing":
 
         await query.edit_message_text(
             "🎬 Video Editing Portfolio\n\n"
-            "My video editing projects will appear here.\n\n"
-            "📹 Video 1\n"
-            "📹 Video 2\n"
-            "📹 Video 3\n\n"
-            "More projects coming soon!"
+            "📹 My video editing projects will appear here.\n\n"
+            "Video files will be added soon!"
         )
 
-
-    # GRAPHIC DESIGN
     elif query.data == "graphic_design":
 
         await query.edit_message_text(
             "🎨 Graphic Design Portfolio\n\n"
-            "My graphic design projects will appear here.\n\n"
-            "🖼️ Social Media Design\n"
-            "🖼️ Poster Design\n"
-            "🖼️ Branding Design"
+            "🖼️ My graphic design projects will appear here."
         )
 
-
-    # WEBSITE DEVELOPMENT
     elif query.data == "website_development":
 
         await query.edit_message_text(
             "💻 Website Development Portfolio\n\n"
-            "My website projects will appear here.\n\n"
-            "🌐 Website Project 1\n"
-            "🌐 Website Project 2"
+            "🌐 My website projects will appear here."
         )
 
-
-    # PROMPT ENGINEERING
     elif query.data == "prompt_engineering":
 
         await query.edit_message_text(
@@ -144,8 +151,6 @@ async def button_handler(
             "My AI and Prompt Engineering projects will appear here."
         )
 
-
-    # ABOUT ME
     elif query.data == "about":
 
         await query.edit_message_text(
@@ -158,45 +163,23 @@ async def button_handler(
             "Welcome to my professional digital portfolio!"
         )
 
-
-    # CONTACT
     elif query.data == "contact":
 
-        await query.edit_message_text(
-            "📞 Contact Me\n\n"
-            "Telegram: @YOUR_USERNAME\n"
-            "Phone: +251 XXX XXX XXX"
+    await query.edit_message_text(
+        "📞 Contact Me\n\n"
+        "Name: Nahom\n"
+        "Telegram: @nahomon\n"
+        "Phone: 0900023230"
+    )
+            
         )
 
-
-    # BACK TO MAIN MENU
     elif query.data == "main_menu":
-
-        keyboard = [
-            [
-                InlineKeyboardButton(
-                    "🎨 View My Portfolio",
-                    callback_data="portfolio"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    "👤 About Me",
-                    callback_data="about"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    "📞 Contact Me",
-                    callback_data="contact"
-                )
-            ],
-        ]
 
         await query.edit_message_text(
             "👋 Welcome to Nahom's Digital Portfolio!\n\n"
             "Choose an option below:",
-            reply_markup=InlineKeyboardMarkup(keyboard)
+            reply_markup=main_menu()
         )
 
 
@@ -209,11 +192,20 @@ TOKEN = os.environ.get("BOT_TOKEN")
 if not TOKEN:
     raise ValueError("BOT_TOKEN environment variable is not set!")
 
+
+web_thread = threading.Thread(
+    target=run_web_server,
+    daemon=True
+)
+
+web_thread.start()
+
+
 app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CallbackQueryHandler(button_handler))
 
-print("Bot is running...")
+print("Telegram Portfolio Bot is running...")
 
 app.run_polling()
