@@ -10,213 +10,180 @@ from telegram.ext import (
     ContextTypes,
 )
 
-
-# =========================
-# SIMPLE RENDER WEB SERVER
-# =========================
-
+# ==========================================
+# RENDER KEEP-ALIVE WEB SERVER
+# ==========================================
 class HealthHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
         self.end_headers()
-        self.wfile.write(b"Telegram Portfolio Bot is running!")
+        self.wfile.write(b"Nahom Digital Work Bot is active and running!")
 
     def log_message(self, format, *args):
         return
-
 
 def run_web_server():
     port = int(os.environ.get("PORT", 10000))
     server = HTTPServer(("0.0.0.0", port), HealthHandler)
     server.serve_forever()
 
+# ==========================================
+# REUSABLE BUTTONS
+# ==========================================
+def back_button():
+    return [InlineKeyboardButton("⬅️ ወደ ዋናው ገጽ ተመለስ", callback_data="main_menu")]
 
-# =========================
+# ==========================================
 # MAIN MENU
-# =========================
-
-def main_menu():
+# ==========================================
+def main_menu_keyboard():
     keyboard = [
-        [
-            InlineKeyboardButton(
-                "🎨 View My Portfolio",
-                callback_data="portfolio"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "👤 About Me",
-                callback_data="about"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "📞 Contact Me",
-                callback_data="contact"
-            )
-        ],
+        [InlineKeyboardButton("🔴 Video Editing", callback_data="video_editing")],
+        [InlineKeyboardButton("🩵 Graphic Design", callback_data="graphic_design")],
+        [InlineKeyboardButton("🍷 Website Developing", callback_data="website_dev")],
+        [InlineKeyboardButton("💛 Social Media Management", callback_data="social_media")],
+        [InlineKeyboardButton("💚 Prompt Engineering / አማካሪ", callback_data="prompt_eng")],
+        [InlineKeyboardButton("☎️ ያናግሩኝ (Contact Me)", callback_data="contact_me")],
     ]
-
     return InlineKeyboardMarkup(keyboard)
 
-
-# =========================
+# ==========================================
 # START COMMAND
-# =========================
-
+# ==========================================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "👋 Welcome to Nahom's Digital Portfolio!\n\n"
-        "Choose an option below:",
-        reply_markup=main_menu()
+    welcome_text = (
+        "✨ **Welcome to Nahom Digital Work** ✨\n\n"
+        "ስራዎትን ዲጂታል በማድረግ ካሉበት ደረጃ አንድ እርምጃ ከፍ ይበሉ!\n\n"
+        "👉 **ስራዎትን ዲጂታል ያድርጉ**\n\n"
+        "ከታች ካሉት አገልግሎቶች የሚፈልጉትን ይምረጡ፦"
     )
+    if update.message:
+        await update.message.reply_text(welcome_text, reply_markup=main_menu_keyboard(), parse_mode="Markdown")
 
-
-# =========================
-# BUTTON HANDLER
-# =========================
-
-async def button_handler(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
-
+# ==========================================
+# BUTTON CLICK HANDLERS
+# ==========================================
+async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    data = query.data
 
-    # PORTFOLIO MENU
-    if query.data == "portfolio":
+    # ወደ ዋናው ገጽ
+    if data == "main_menu":
+        welcome_text = (
+            "✨ **Welcome to Nahom Digital Work** ✨\n\n"
+            "ስራዎትን ዲጂታል በማድረግ ካሉበት ደረጃ አንድ እርምጃ ከፍ ይበሉ!\n\n"
+            "👉 **ስራዎትን ዲጂታል ያድርጉ**\n\n"
+            "ከታች ካሉት አገልግሎቶች የሚፈልጉትን ይምረጡ፦"
+        )
+        await query.edit_message_text(welcome_text, reply_markup=main_menu_keyboard(), parse_mode="Markdown")
 
+    # 1. VIDEO EDITING
+    elif data == "video_editing":
+        text = (
+            "🎬 **Video Editing Service**\n\n"
+            "ጥራት ያላቸውና ማራኪ የቪዲዮ ኤዲቲንግ ስራዎች።\n\n"
+            "የሰነዷቸውን ቪዲዮዎች ለማየት ከታች ያሉትን ሊንኮች ይጫኑ፦"
+        )
         keyboard = [
-            [
-                InlineKeyboardButton(
-                    "🎬 Video Editing",
-                    callback_data="video_editing"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    "🎨 Graphic Design",
-                    callback_data="graphic_design"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    "💻 Website Development",
-                    callback_data="website_development"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    "🤖 Prompt Engineering",
-                    callback_data="prompt_engineering"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    "⬅️ Back to Main Menu",
-                    callback_data="main_menu"
-                )
-            ],
+            # ሊንኮቹን በራስህ የቴሌግራም/ቪዲዮ ሊንክ መቀየር ትችላለህ
+            [InlineKeyboardButton("👉 የመጀመሪያውን ቪዲዮ ይመልከቱ (Video 1)", url="https://t.me/nahomon")],
+            [InlineKeyboardButton("👉 ሁለተኛውን ቪዲዮ ይመልከቱ (Video 2)", url="https://t.me/nahomon")],
+            [InlineKeyboardButton("✅ I Choose This One (ይህን መርጫለሁ)", callback_data="contact_me")],
+            back_button(),
         ]
+        await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
-        await query.edit_message_text(
-            "🎨 My Portfolio\n\nSelect a category:",
-            reply_markup=InlineKeyboardMarkup(keyboard)
+    # 2. GRAPHIC DESIGN
+    elif data == "graphic_design":
+        text = (
+            "🎨 **Graphic Design Service**\n\n"
+            "ማራኪና ዘመናዊ የግራፊክስ ዲዛይን ስራዎች።\n\n"
+            "የተሰሩ 5 የዲዛይን ናሙናዎችን ለማየት ከታች ያሉትን ሊንኮች ይጎብኙ፦"
         )
+        keyboard = [
+            # የፎቶዎችህን ሊንክ እዚህ ጋር መተካት ትችላለህ
+            [InlineKeyboardButton("🖼️ የዲዛይን ስራ 1 ይመልከቱ", url="https://t.me/nahomon")],
+            [InlineKeyboardButton("🖼️ የዲዛይን ስራ 2 ይመልከቱ", url="https://t.me/nahomon")],
+            [InlineKeyboardButton("🖼️ የዲዛይን ስራ 3 ይመልከቱ", url="https://t.me/nahomon")],
+            [InlineKeyboardButton("🖼️ የዲዛይን ስራ 4 ይመልከቱ", url="https://t.me/nahomon")],
+            [InlineKeyboardButton("🖼️ የዲዛይን ስራ 5 ይመልከቱ", url="https://t.me/nahomon")],
+            [InlineKeyboardButton("✅ I Choose This One (ይህን መርጫለሁ)", callback_data="contact_me")],
+            back_button(),
+        ]
+        await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
-    # VIDEO EDITING
-    elif query.data == "video_editing":
-
-        await query.edit_message_text(
-            "🎬 Video Editing Portfolio\n\n"
-            "📹 My video editing projects will appear here.\n\n"
-            "Video files will be added soon!"
+    # 3. WEBSITE DEVELOPING
+    elif data == "website_dev":
+        text = (
+            "💻 **Website Developing Service**\n\n"
+            "ዘመናዊ፣ ፈጣን እና ለስልክ ምቹ የሆኑ ድረ-ገጾችን እንገነባለን።\n\n"
+            "የተሰሩ የዌብሳይት ፕሮጀክቶችን ከታች ይመልከቱ፦"
         )
+        keyboard = [
+            [InlineKeyboardButton("🌐 View Web Portfolio", url="https://t.me/nahomon")],
+            [InlineKeyboardButton("✅ I Choose This One (ይህን መርጫለሁ)", callback_data="contact_me")],
+            back_button(),
+        ]
+        await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
-    # GRAPHIC DESIGN
-    elif query.data == "graphic_design":
-
-        await query.edit_message_text(
-            "🎨 Graphic Design Portfolio\n\n"
-            "🖼️ My graphic design projects will appear here."
+    # 4. SOCIAL MEDIA MANAGEMENT
+    elif data == "social_media":
+        text = (
+            "💛 **Social Media Management**\n\n"
+            "የማህበራዊ ሚዲያ ገጾችዎን ማሳደግ፣ ይዘት ማዘጋጀት እና ማስተዳደር።"
         )
+        keyboard = [
+            [InlineKeyboardButton("✅ I Choose This One (ይህን መርጫለሁ)", callback_data="contact_me")],
+            back_button(),
+        ]
+        await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
-    # WEBSITE DEVELOPMENT
-    elif query.data == "website_development":
-
-        await query.edit_message_text(
-            "💻 Website Development Portfolio\n\n"
-            "🌐 My website projects will appear here."
+    # 5. PROMPT ENGINEERING / አማካሪ
+    elif data == "prompt_eng":
+        text = (
+            "💚 **Prompt Engineering & AI አማካሪ**\n\n"
+            "አርቴፊሻል ኢንተለጀንስን (AI) ለስራዎ በመጠቀም ምርታማነትን ማሳደግ።"
         )
+        keyboard = [
+            [InlineKeyboardButton("✅ I Choose This One (ይህን መርጫለሁ)", callback_data="contact_me")],
+            back_button(),
+        ]
+        await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
-    # PROMPT ENGINEERING
-    elif query.data == "prompt_engineering":
-
-        await query.edit_message_text(
-            "🤖 Prompt Engineering Portfolio\n\n"
-            "My AI and Prompt Engineering projects will appear here."
+    # 6. CONTACT ME
+    elif data == "contact_me":
+        contact_text = (
+            "☎️ **ያናግሩኝ / Contact Information**\n\n"
+            "ስራዎን አብረን ለመጀመር በሚከተሉት አድራሻዎች ያግኙኝ፦\n\n"
+            "👤 **Telegram:** @nahomon\n"
+            "📞 **ስልክ ቁጥር:** `0900003232`\n"
+            "📧 **ኢሜይል:** `tnahom869@gmail.com`\n\n"
+            "መልእክትዎን ያስቀምጡ፤ በፍጥነት ምላሽ እሰጣለሁ!"
         )
+        keyboard = [
+            [InlineKeyboardButton("💬 በቴሌግራም መልእክት ይላኩ", url="https://t.me/nahomon")],
+            back_button(),
+        ]
+        await query.edit_message_text(contact_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
-    # ABOUT ME
-    elif query.data == "about":
+# ==========================================
+# MAIN EXECUTION
+# ==========================================
+if __name__ == "__main__":
+    TOKEN = os.environ.get("BOT_TOKEN")
+    if not TOKEN:
+        raise ValueError("BOT_TOKEN አልተገኘም! እባክዎ Render ላይ BOT_TOKEN መኖሩን ያረጋግጡ።")
 
-        await query.edit_message_text(
-            "👤 About Me\n\n"
-            "Hello! My name is Nahom.\n\n"
-            "🎬 Video Editor\n"
-            "🎨 Graphic Designer\n"
-            "💻 Website Developer\n"
-            "🤖 Prompt Engineer\n\n"
-            "Welcome to my professional digital portfolio!"
-        )
+    # Render ነፃ ሰርቨር እንዳይዘጋ ዌብ ሰርቨር ማስጀመር
+    web_thread = threading.Thread(target=run_web_server, daemon=True)
+    web_thread.start()
 
-    # CONTACT ME
-    elif query.data == "contact":
+    # ቦቱን ማስነሳት
+    app = ApplicationBuilder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(button_click))
 
-        await query.edit_message_text(
-            "📞 Contact Me\n\n"
-            "Name: Nahom\n"
-            "Telegram: @nahomon\n"
-            "Phone: 0900023230"
-        )
-
-    # BACK TO MAIN MENU
-    elif query.data == "main_menu":
-
-        await query.edit_message_text(
-            "👋 Welcome to Nahom's Digital Portfolio!\n\n"
-            "Choose an option below:",
-            reply_markup=main_menu()
-        )
-
-
-# =========================
-# RUN BOT
-# =========================
-
-TOKEN = os.environ.get("BOT_TOKEN")
-
-if not TOKEN:
-    raise ValueError("BOT_TOKEN environment variable is not set!")
-
-
-# Start Render health check server
-web_thread = threading.Thread(
-    target=run_web_server,
-    daemon=True
-)
-
-web_thread.start()
-
-
-# Start Telegram bot
-app = ApplicationBuilder().token(TOKEN).build()
-
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CallbackQueryHandler(button_handler))
-
-print("Telegram Portfolio Bot is running...")
-
-app.run_polling()
+    print("Nahom Digital Work Bot በስኬት እየሰራ ነው...")
+    app.run_polling()
